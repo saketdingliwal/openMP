@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#define NUM_THREADS 10
+#define NUM_THREADS 16
 #define PADDING 4
 int min(int a,int b)
 {
@@ -13,17 +13,17 @@ int min(int a,int b)
 int
 main(int argc, char *argv[])
 {
-	omp_set_num_threads(NUM_THREADS);
-	int n = 10000;
+	int n = 96;
 	int a[n];
 	int prefix[n];
-	int to[NUM_THREADS][PADDING];
+	int to[2*NUM_THREADS+2][PADDING];
 	int p;
 	for(int i=0;i<n;i++)
 	{
 		a[i] = i;
 		prefix[i] = 0;
 	}
+	omp_set_num_threads(NUM_THREADS);
 	#pragma omp parallel
 	{
 		int id = omp_get_thread_num();
@@ -42,30 +42,64 @@ main(int argc, char *argv[])
 		}
 		to[id][0] = prefix[end-1];			
 	}
+
+
 	// for(int i=0;i<p;i++)
 	// {
 	// 	printf("%d ",to[i][0]);
 	// }
 	// printf("\n");
-	int level = 2;
-	while((level/2) < p)
+	
+
+
+	int p_save = p;
+	int new_p = 1;
+	while(p!=0)
 	{
+		p=p/2;
+		new_p *=2;
+	}
+	p = new_p;
+	int level = 2;
+	while(level!=p)
+	{
+		omp_set_num_threads(p/level);
 		#pragma omp parallel
 		{
 			int id = omp_get_thread_num();
-			int position = id%level - (level/2)  + 1;
-			if(position>0)
-			{
-				to[id][0] += to[id-position][0];
-			}
+			int work_for = level*(id+1)-1;
+			int get = work_for - (level/2);
+			to[work_for][0] += to[get][0]; 
 		}
 		level*=2;
 	}
+	int save  = to[p-1][0];
+	to[p-1][0] = 0;
+	while(level!=1)
+	{
+		omp_set_num_threads(p/level);
+		#pragma omp parallel
+		{
+			int id = omp_get_thread_num();
+			int work_for = level*(id+1)-1;
+			int get = work_for - (level/2);
+			int temp = to[work_for][0];
+			to[work_for][0] += to[get][0];
+			to[get][0] =  temp;
+		}
+		level /= 2;
+	}
+	to[p][0] = save;
+	p = p_save;
+
+
 	// for(int i=0;i<p;i++)
 	// {
-	// 	printf("%d ",to[i][0]);
+	// 	printf("%d ",to[i+1][0]);
 	// }
 	// printf("\n");
+
+	omp_set_num_threads(NUM_THREADS);
 	#pragma omp parallel
 	{
 		int id = omp_get_thread_num();
@@ -77,16 +111,17 @@ main(int argc, char *argv[])
 		int end = min((id+1)*block_size,n);
 		for(int i=start;i<end;i++)
 		{
-			if(id!=0)
-				prefix[i] += to[id-1][0];
+			prefix[i] += to[id][0];
 		}		
 	}
-	// for(int i=0;i<100;i++)
+
+
+	// for(int i=0;i<n;i++)
 	// {
 	// 	printf("%d ",a[i]);
 	// }
 	// printf("\n");
-	// for(int i=0;i<100;i++)
+	// for(int i=0;i<n;i++)
 	// {
 	// 	printf("%d ",prefix[i]);
 	// }
