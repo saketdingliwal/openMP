@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
-#define NUM_THREADS 16
 #define PADDING 4
 int min(int a,int b)
 {
@@ -9,13 +8,13 @@ int min(int a,int b)
 		return b;
 	return a;
 }
-
+int a[10000000];
+int prefix[20000000];
 int
 main(int argc, char *argv[])
 {
-	int n = 96;
-	int a[n];
-	int prefix[n];
+	int n = atoi(argv[1]);
+	int NUM_THREADS = atoi(argv[2]);
 	int to[2*NUM_THREADS+2][PADDING];
 	int p;
 	for(int i=0;i<n;i++)
@@ -23,6 +22,7 @@ main(int argc, char *argv[])
 		a[i] = i;
 		prefix[i] = 0;
 	}
+	double start = omp_get_wtime();
 	omp_set_num_threads(NUM_THREADS);
 	#pragma omp parallel
 	{
@@ -114,7 +114,8 @@ main(int argc, char *argv[])
 			prefix[i] += to[id][0];
 		}		
 	}
-
+	double end = omp_get_wtime();
+	printf("%lf \n",end - start);
 
 	// for(int i=0;i<n;i++)
 	// {

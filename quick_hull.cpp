@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 #include <omp.h>
-
+#define NUM_THREADS 10
 using namespace std;
 typedef struct 
 {
