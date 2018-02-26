@@ -15,6 +15,9 @@ typedef struct
 	point p2;
 }compute;
 
+
+
+
 double pnt_in_eqn(point p,point p1,point p2)
 {
 	double value= abs((p.y-p1.y)*(p2.x-p1.x) - (p2.y-p1.y) * (p.x - p1.x));
