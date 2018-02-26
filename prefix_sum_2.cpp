@@ -13,6 +13,7 @@ int min(int a,int b)
 
 int a[10000000];
 int prefix[20000000][PADDING];
+int prefix2[20000000];
 
 int
 main(int argc, char *argv[])
@@ -24,7 +25,8 @@ main(int argc, char *argv[])
 	
 	for(int i=0;i<n;i++)
 	{
-		a[i] = i;
+		int val = i;
+		a[i] = val;
 		prefix[i][0] = a[i];
 	}
 	
@@ -44,7 +46,7 @@ main(int argc, char *argv[])
 
 	n = new_n;
 	int level = 2;
-	while(level!=n)
+	while(level<=n)
 	{
 		int untill = n/level;
 		omp_set_num_threads(core_count);
@@ -74,20 +76,28 @@ main(int argc, char *argv[])
 		}
 		level /= 2;
 	}
-	if(n==n_save)
-		prefix[n][0] = prefix[n-1][0] + a[n-1];
+	prefix[n][0] = save;
+	n = n_save;
+	
 	double end = omp_get_wtime();
+	prefix2[0] = a[0];
+	for(int i=1;i<n;i++)
+	{
+		prefix2[i] = prefix2[i-1] + a[i];
+	}
+	for(int i=0;i<n;i++)
+	{
+		if(prefix2[i]!=prefix[i+1][0])
+			cout << "sdsdsdsdsd";
+	}
+
 	cout << (end-start);
 
-	// n = n_save;
-	// for(int i=0;i<n;i++)
-	// {
-	// 	printf("%d ",a[i]);
-	// }
-	// printf("\n");
-	// for(int i=0;i<=n;i++)
-	// {
-	// 	printf("%d ",prefix[i][0]);
-	// }
+
+	
+	for(int i=0;i<=n;i++)
+	{
+		printf("%d ",prefix[i][0]);
+	}
 	
 }

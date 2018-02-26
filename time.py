@@ -1,6 +1,6 @@
 import os
 import subprocess
-
+import math
 
 core_count = 1
 for j in range(5):
@@ -16,6 +16,6 @@ for j in range(5):
 			command.extend(arg)     
 			proc = subprocess.Popen(command, stdout=subprocess.PIPE)
 			summ += (float)(proc.stdout.read())
-		print n,";",core_count,";",(summ/20)
+		print n,";",core_count,";",(summ/20),";",math.log(summ/20)
 		n = n * 2
 	core_count = core_count * 2

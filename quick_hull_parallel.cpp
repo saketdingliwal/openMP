@@ -45,6 +45,7 @@ void print_comp(vector <compute> comp_list)
 
 int main()
 {
+	int core_count = 4;
 	vector<compute> comp_list;
 	vector<point> points;
 	int minn = INT_MAX;
@@ -112,6 +113,8 @@ int main()
 		// print_comp(comp_list);
 		// cout << "---------------------------"<<endl;
 		vector<compute> new_comp_list;
+		omp_set_num_threads(core_count);
+		#pragma omp parallel for
 		for(int i=0;i<comp_list.size();i++)
 		{	
 			double maxx = -2;
@@ -126,8 +129,11 @@ int main()
 			}
 			if(maxx<=0)
 			{
-				ans.insert(make_pair(comp_list[i].p1.x,comp_list[i].p1.y));
-				ans.insert(make_pair(comp_list[i].p2.x,comp_list[i].p2.y));
+				#pragma omp critical
+				{
+					ans.insert(make_pair(comp_list[i].p1.x,comp_list[i].p1.y));
+					ans.insert(make_pair(comp_list[i].p2.x,comp_list[i].p2.y));
+				}
 			}
 			else
 			{
@@ -146,8 +152,11 @@ int main()
 					if(sign2<0)
 						c2.v.push_back(comp_list[i].v[j]);
 				}
-				new_comp_list.push_back(c1);
-				new_comp_list.push_back(c2);
+				#pragma omp critical
+				{
+					new_comp_list.push_back(c1);
+					new_comp_list.push_back(c2);
+				}
 			}
 		}
 		comp_list.clear();
